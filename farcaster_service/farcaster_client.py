@@ -39,7 +39,7 @@ class FarcasterClient:
                 res = await client.get(
                     f"{self.base_url}/feed/trending",
                     headers=self.headers,
-                    params={"limit": limit, "time_window": "24h"}
+                    params={"limit": limit, "provider": "neynar"}
                 )
                 res.raise_for_status()
                 data = res.json()

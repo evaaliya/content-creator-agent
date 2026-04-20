@@ -9,3 +9,13 @@ __pycache__/
 env/
 venv/
 .env.example
+
+# Excluded from tracking
+ascii.jpg
+ascii_avatar.py
+ascii_avatar.txt
+evaban.py
+setup_signer.mjs
+register_agent.py
+test_privy.py
+untitled folder/
