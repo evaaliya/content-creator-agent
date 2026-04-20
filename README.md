@@ -153,7 +153,7 @@ The agent runs in an infinite loop:
 | Username | `@matricula` |
 | Display Name | Matriculate |
 | Bio | enrolled in everything. committed to nothing. |
-| FID | 3319768 |
+| FID | 3319769 |
 | Wallet | Privy sandbox on Arbitrum |
 
 ## License
