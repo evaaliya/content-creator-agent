@@ -12,9 +12,10 @@ from wallet.privy_wallet import PrivyWallet
 from memory.vector_memory import VectorMemory
 from brain.decision_engine import make_decision, analyze_cast_for_engagement
 
-# ── Daily limits ──
+# ── Limits ──
 MAX_DAILY_CASTS = 30
 CHANNELS_TO_MONITOR = ["ai", "dev", "crypto", "founders"]
+FEED_ENGAGEMENT_LIMIT = 30  # engage with up to 30 casts per run
 
 
 class AutonomousAgent:
@@ -74,17 +75,33 @@ class AutonomousAgent:
             elif a_type == "none":
                 pass
 
-    # ──────────────────── PHASE 1: Respond to notifications ──────
+    # ──────────────────── STEP 1: Make one original cast ──────────
+    async def post_original_cast(self):
+        print("\n── ✍️ Step 1: Making original cast ──")
+        if not self._can_cast():
+            print("   🚫 Daily limit reached")
+            return
+
+        memories = await self.mem.semantic_search("what should I post about today")
+        decision = make_decision([], [], memories)
+
+        actions = decision.get("actions", [])
+        if actions:
+            print(f"   🧠 {decision.get('thoughts', '')[:100]}")
+            await self.execute_actions(actions)
+        else:
+            print("   ⏭️ No cast decision")
+
+    # ──────────────────── STEP 2: Respond to reactions/notifs ─────
     async def handle_notifications(self):
-        print("\n── 📬 Phase 1: Checking notifications ──")
+        print("\n── 📬 Step 2: Checking notifications ──")
         notifs = await self.fc.fetch_notifications()
 
         if not notifs:
             print("   No new notifications")
             return
 
-        # Process up to 5 notifications per cycle
-        for notif in notifs[:5]:
+        for notif in notifs[:10]:
             if not self._can_cast():
                 break
 
@@ -109,20 +126,39 @@ class AutonomousAgent:
             # Store interaction in memory
             await self.mem.store_memory(str(author.get("fid", "")), text)
 
-    # ──────────────────── PHASE 2: Engage with trending feed ─────
-    async def engage_trending(self):
-        print("\n── 🌍 Phase 2: Scanning trending feed ──")
-        casts = await self.fc.fetch_trending_feed(limit=25)
+    # ──────────────────── STEP 3: Engage with feed (30 casts) ─────
+    async def engage_feed(self):
+        print(f"\n── 🌍 Step 3: Engaging with feed ({FEED_ENGAGEMENT_LIMIT} casts) ──")
 
-        if not casts:
-            print("   No trending casts found")
-            return
+        # Collect casts from trending + channels
+        all_casts = []
+
+        # Trending
+        trending = await self.fc.fetch_trending_feed(limit=25)
+        all_casts.extend(trending)
+
+        # Channels
+        for channel in CHANNELS_TO_MONITOR:
+            channel_casts = await self.fc.fetch_channel_feed(channel, limit=10)
+            all_casts.extend(channel_casts)
+
+        # Deduplicate by hash
+        seen = set()
+        unique_casts = []
+        for c in all_casts:
+            h = c.get("hash", "")
+            if h and h not in seen:
+                seen.add(h)
+                unique_casts.append(c)
+
+        # Shuffle so it's not always the same order
+        random.shuffle(unique_casts)
+
+        print(f"   📋 {len(unique_casts)} unique casts to scan")
 
         engaged = 0
-        max_engagements_per_cycle = 3  # don't spam
-
-        for cast in casts:
-            if not self._can_cast() or engaged >= max_engagements_per_cycle:
+        for cast in unique_casts:
+            if not self._can_cast() or engaged >= FEED_ENGAGEMENT_LIMIT:
                 break
 
             cast_hash = cast.get("hash", "")
@@ -145,98 +181,46 @@ class AutonomousAgent:
             action_type = decision.get("actions", [{}])[0].get("type", "none")
 
             if action_type == "none":
-                print(f"   ⏭️ Skipped (not interesting enough)")
+                print(f"   ⏭️ Skip")
                 continue
 
             print(f"   🧠 {decision.get('thoughts', '')[:100]}")
             await self.execute_actions(decision.get("actions", []))
             engaged += 1
 
-            # Small pause between engagements to look human
-            await asyncio.sleep(random.randint(3, 8))
+            # 2-4 sec pause between engagements (minimal, just to not hammer API)
+            await asyncio.sleep(random.uniform(2, 4))
 
-        print(f"   ✅ Engaged with {engaged} trending casts")
+        print(f"\n   ✅ Engaged with {engaged} casts total")
 
-    # ──────────────────── PHASE 3: Explore channels ──────────────
-    async def explore_channels(self):
-        print("\n── 📡 Phase 3: Exploring channels ──")
-
-        if not self._can_cast():
-            print("   Daily limit reached, skipping channels")
-            return
-
-        # Pick 1-2 random channels to explore per cycle
-        channels = random.sample(CHANNELS_TO_MONITOR, min(2, len(CHANNELS_TO_MONITOR)))
-
-        for channel in channels:
-            if not self._can_cast():
-                break
-
-            casts = await self.fc.fetch_channel_feed(channel, limit=10)
-
-            for cast in casts[:3]:  # max 3 per channel
-                if not self._can_cast():
-                    break
-
-                cast_hash = cast.get("hash", "")
-                if cast_hash in self.replied_hashes:
-                    continue
-
-                text = cast.get("text", "")
-                if len(text.strip()) < 20:
-                    continue
-
-                author = cast.get("author", {})
-                username = author.get("username", "?")
-
-                print(f"\n   👀 /{channel} @{username}: {text[:80]}...")
-
-                memories = await self.mem.semantic_search(text)
-                decision = analyze_cast_for_engagement(cast, memories)
-
-                action_type = decision.get("actions", [{}])[0].get("type", "none")
-                if action_type == "none":
-                    print(f"   ⏭️ Skipped")
-                    continue
-
-                print(f"   🧠 {decision.get('thoughts', '')[:100]}")
-                await self.execute_actions(decision.get("actions", []))
-
-                await asyncio.sleep(random.randint(3, 8))
-
-    # ──────────────────── MAIN CYCLE ─────────────────────────────
-    async def cycle(self):
+    # ──────────────────── MAIN RUN (single execution) ─────────────
+    async def run(self):
         self._check_daily_reset()
 
         print(f"\n{'='*50}")
-        print(f"🤖 Agent Cycle | Casts today: {self.daily_casts}/{MAX_DAILY_CASTS}")
+        print(f"🤖 @matricula — single run")
         print(f"{'='*50}")
 
         if not self._can_cast():
-            print("🚫 Daily cast limit reached. Sleeping until tomorrow...")
+            print("🚫 Daily cast limit reached.")
             return
 
-        # Phase 1: Always respond to people talking to us
+        # Step 1: Make one original cast
+        await self.post_original_cast()
+
+        # Step 2: Respond to notifications/reactions
         await self.handle_notifications()
 
-        # Phase 2: Go hunting in the trending feed
-        await self.engage_trending()
+        # Step 3: Engage with feed (up to 30 casts, no sleeping)
+        await self.engage_feed()
 
-        # Phase 3: Dive into specific channels
-        await self.explore_channels()
+        print(f"\n{'='*50}")
+        print(f"✅ Run complete. Casts: {self.daily_casts}/{MAX_DAILY_CASTS}")
+        print(f"{'='*50}")
 
-        print(f"\n📊 Cycle complete. Total casts today: {self.daily_casts}/{MAX_DAILY_CASTS}")
-
-    # ──────────────────── START LOOP ─────────────────────────────
+    # ──────────────────── LEGACY: Loop mode (optional) ────────────
     async def start(self):
+        """Run once and exit. No infinite loop."""
         print("🚀 Agent sequence initiated.")
-        while True:
-            try:
-                await self.cycle()
-            except Exception as e:
-                print(f"⚠️ Loop Error: {e}")
-
-            # Sleep 5-10 minutes between cycles
-            jitter_seconds = random.randint(300, 600)
-            print(f"💤 Sleeping for {jitter_seconds // 60} min {jitter_seconds % 60} sec...\n")
-            await asyncio.sleep(jitter_seconds)
+        await self.run()
+        print("👋 Done.")
