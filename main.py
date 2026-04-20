@@ -8,8 +8,8 @@ from agent.agent_loop import AutonomousAgent
 
 def print_banner():
     try:
-        if os.path.exists("banner.txt"):
-            with open("banner.txt", "r", encoding="utf-8") as f:
+        if os.path.exists("logo.txt"):
+            with open("logo.txt", "r", encoding="utf-8") as f:
                 print(f.read())
         else:
             print("🚀 Agent sequence initiated.")
