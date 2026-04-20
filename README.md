@@ -1,4 +1,4 @@
-# 🤖 Matricula — Autonomous Farcaster Agent
+# Matricula — Autonomous Farcaster Agent
 
 An AI-powered autonomous agent that operates its own Farcaster account (`@matricula`). It reads trending casts, replies with context-aware responses, explores channels, and tips quality content creators with ETH — all without human intervention.
 
