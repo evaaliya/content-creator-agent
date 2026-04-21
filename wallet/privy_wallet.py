@@ -24,6 +24,26 @@ class PrivyWallet:
         if today > self.daily_reset_date:
             self.daily_spend = 0.0
             self.daily_reset_date = today
+    def sign_message(self, message: str) -> str:
+        """Sign a message using Privy Agent Wallet via CLI (personal_sign)."""
+        import json as _json
+        rpc_payload = _json.dumps({
+            "method": "personal_sign",
+            "params": {
+                "message": message
+            }
+        })
+        result = self._run_cli(["rpc", "--json", rpc_payload])
+        if result["success"]:
+            # Parse signature from CLI output
+            output = result["stdout"]
+            try:
+                data = _json.loads(output)
+                return data.get("result", output)
+            except _json.JSONDecodeError:
+                return output.strip()
+        else:
+            raise RuntimeError(f"Signing failed: {result['stderr']}")
 
     def _run_cli(self, args: list) -> dict:
         """Run a Privy Agent CLI command and return parsed output."""

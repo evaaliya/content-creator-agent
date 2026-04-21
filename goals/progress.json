@@ -22,5 +22,17 @@
     "treasury_score": 60,
     "priority": "patron",
     "wallet_balance": 0.0
+  },
+  {
+    "timestamp": "2026-04-21T15:39:01.584534",
+    "followers": 1,
+    "following": 0,
+    "neynar_score": 0.33,
+    "engagement_rate": 0.41,
+    "influence_score": 6,
+    "patron_score": 0,
+    "treasury_score": 60,
+    "priority": "patron",
+    "wallet_balance": 0.0
   }
 ]
