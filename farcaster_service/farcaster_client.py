@@ -92,6 +92,50 @@ class FarcasterClient:
                 print(f"Follow error: {e}")
                 return False
 
+    # ──────────────────── WRITE: Like a cast ──────────────────────
+    async def like_cast(self, cast_hash: str):
+        """Like (react to) a cast."""
+        from config import FARCASTER_SIGNER_UUID
+        async with httpx.AsyncClient(timeout=15) as client:
+            try:
+                res = await client.post(
+                    f"{self.base_url}/reaction",
+                    headers=self.headers,
+                    json={
+                        "signer_uuid": FARCASTER_SIGNER_UUID,
+                        "reaction_type": "like",
+                        "target": cast_hash
+                    }
+                )
+                res.raise_for_status()
+                print(f"❤️ Liked {cast_hash[:10]}...")
+                return True
+            except Exception as e:
+                print(f"Like error: {e}")
+                return False
+
+    # ──────────────────── WRITE: Recast ───────────────────────────
+    async def recast(self, cast_hash: str):
+        """Recast (share) a cast."""
+        from config import FARCASTER_SIGNER_UUID
+        async with httpx.AsyncClient(timeout=15) as client:
+            try:
+                res = await client.post(
+                    f"{self.base_url}/reaction",
+                    headers=self.headers,
+                    json={
+                        "signer_uuid": FARCASTER_SIGNER_UUID,
+                        "reaction_type": "recast",
+                        "target": cast_hash
+                    }
+                )
+                res.raise_for_status()
+                print(f"🔁 Recasted {cast_hash[:10]}...")
+                return True
+            except Exception as e:
+                print(f"Recast error: {e}")
+                return False
+
     # ──────────────────── READ: Trending (global) ────────────────
     async def fetch_trending_feed(self, limit: int = 25):
         """Fetch trending casts from the ENTIRE Farcaster network — not just subscriptions."""

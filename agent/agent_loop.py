@@ -77,6 +77,12 @@ class AutonomousAgent:
             elif a_type == "tip_user":
                 await self.wallet.send_tip(target, amt)
 
+            elif a_type == "like_cast":
+                await self.fc.like_cast(target)
+
+            elif a_type == "recast":
+                await self.fc.recast(target)
+
             elif a_type == "none":
                 pass
 
