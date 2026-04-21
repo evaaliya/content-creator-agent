@@ -12,6 +12,25 @@ class FarcasterClient:
         self.base_url = "https://api.neynar.com/v2/farcaster"
         self.fid = FARCASTER_FID
 
+    # ──────────────────── READ: My own casts (for metrics) ────────
+    async def fetch_my_casts(self, limit: int = 50):
+        """Fetch the agent's own casts with engagement data."""
+        async with httpx.AsyncClient(timeout=15) as client:
+            try:
+                res = await client.get(
+                    f"{self.base_url}/feed/user/casts",
+                    headers=self.headers,
+                    params={"fid": self.fid, "limit": limit}
+                )
+                res.raise_for_status()
+                data = res.json()
+                casts = data.get("casts", [])
+                print(f"📊 Fetched {len(casts)} of my own casts")
+                return casts
+            except Exception as e:
+                print(f"Fetch my casts error: {e}")
+                return []
+
     # ──────────────────── READ: Notifications ────────────────────
     async def fetch_notifications(self):
         """Fetch mentions, replies, and reactions directed at our FID."""

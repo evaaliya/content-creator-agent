@@ -6,7 +6,19 @@ from .llm_client import generate_agent_decision
 def get_system_prompt() -> str:
     path = os.path.join(os.path.dirname(__file__), "prompt.txt")
     with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+        base_prompt = f.read()
+
+    # Layer 4: Inject learned strategy into prompt
+    try:
+        from .reflection import get_strategy
+        strategy = get_strategy()
+        if strategy:
+            base_prompt += strategy
+            print("🧬 Strategy injected into prompt")
+    except Exception:
+        pass  # No strategy yet — that's fine
+
+    return base_prompt
 
 
 def build_context(mentions: list, feed: list, memories: list) -> str:

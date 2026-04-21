@@ -11,6 +11,8 @@ from farcaster_service.farcaster_client import FarcasterClient
 from wallet.privy_wallet import PrivyWallet
 from memory.vector_memory import VectorMemory
 from brain.decision_engine import make_decision, analyze_cast_for_engagement
+from metrics.engagement_tracker import extract_metrics, update_history, get_history, get_stats
+from brain.reflection import reflect, needs_reflection
 
 # ── Limits ──
 MAX_DAILY_CASTS = 30
@@ -193,6 +195,29 @@ class AutonomousAgent:
 
         print(f"\n   ✅ Engaged with {engaged} casts total")
 
+    # ──────────────────── STEP 0: Self-Reflect ────────────────────
+    async def self_reflect(self):
+        print("\n── 🪞 Step 0: Self-reflection ──")
+        # Fetch my recent casts with engagement data
+        my_casts = await self.fc.fetch_my_casts(limit=50)
+        if not my_casts:
+            print("   No casts to analyze yet")
+            return
+
+        # Extract and store metrics
+        metrics = extract_metrics(my_casts)
+        history = update_history(metrics)
+
+        # Only reflect if we have enough new data
+        if needs_reflection(history, min_new_casts=5):
+            stats = get_stats()
+            print(f"   📊 Stats: {stats.get('total_casts', 0)} casts, avg engagement: {stats.get('avg_engagement', 0)}")
+            reflection = reflect(history, stats)
+            if reflection:
+                print(f"   🧬 New rules: {reflection.get('rules', [])[:2]}")
+        else:
+            print("   ⏭️ Not enough new data to reflect (need 5+ new casts)")
+
     # ──────────────────── MAIN RUN (single execution) ─────────────
     async def run(self):
         self._check_daily_reset()
@@ -201,11 +226,14 @@ class AutonomousAgent:
         print(f"🤖 @matricula — single run")
         print(f"{'='*50}")
 
+        # Step 0: Reflect on past performance (updates strategy)
+        await self.self_reflect()
+
         if not self._can_cast():
             print("🚫 Daily cast limit reached.")
             return
 
-        # Step 1: Make one original cast
+        # Step 1: Make one original cast (uses updated strategy)
         await self.post_original_cast()
 
         # Step 2: Respond to notifications/reactions

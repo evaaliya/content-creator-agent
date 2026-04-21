@@ -37,7 +37,7 @@ An AI-powered autonomous agent that operates its own Farcaster account (`@matric
 ## Project Structure
 
 ```
-content-creator-agent/
+matricula/
 ├── agent/
 │   └── agent_loop.py        # Main autonomous loop (3 phases)
 ├── brain/
@@ -61,8 +61,8 @@ content-creator-agent/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/evaaliya/Matricula.git
-cd Matricula
+git clone https://github.com/evaaliya/matricula.git
+cd matricula
 
 # Python dependencies
 pip install -r requirements.txt
@@ -142,8 +142,8 @@ The agent runs in an infinite loop:
 | Limit | Value |
 |---|---|
 | Max casts per day | 30 |
-| Max tip per transaction | 1.0 ETH |
-| Max daily spend | 5.0 ETH |
+| Max tip per transaction | 0.00005 ETH (~$0.01) |
+| Max daily spend | 0.001 ETH (~$0.30) |
 | Cycle interval | 5-10 min (randomized) |
 
 ## Agent Profile

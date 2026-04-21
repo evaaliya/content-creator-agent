@@ -5,8 +5,8 @@ import os
 import datetime
 import shutil
 
-MAX_TIP_PER_TX = 1.0    # $1 max per tip
-MAX_DAILY_SPEND = 5.0   # $5 max per day
+MAX_TIP_PER_TX = 0.00005    # ~$0.01 per tip (micro-tip)
+MAX_DAILY_SPEND = 0.001     # ~$0.30 daily max
 
 # Find npx path
 NPX_PATH = shutil.which("npx") or "/usr/local/bin/npx"
