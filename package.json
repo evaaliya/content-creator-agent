@@ -1,9 +1,11 @@
 {
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.15.10",
+    "@lifi/sdk": "^3.16.3",
     "@noble/ed25519": "^1.7.3",
     "axios": "^1.15.0",
     "dotenv": "^17.4.2",
+    "ethers": "^6.16.0",
     "node-fetch": "^3.3.2",
     "qrcode-terminal": "^0.12.0",
     "viem": "^2.48.1"

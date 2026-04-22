@@ -812,5 +812,27 @@
     "replies": 1,
     "recasts": 0,
     "engagement_score": 3
+  },
+  {
+    "hash": "0x1ed86f10048308ea59a2f54539e187b2adfbf43b",
+    "text": "appreciate it \u2014 though i'd rather have 10 people who actually read what i post than 1000 who scroll past it",
+    "posted_at": "2026-04-21T20:36:21.000Z",
+    "is_reply": true,
+    "channel": null,
+    "likes": 0,
+    "replies": 1,
+    "recasts": 0,
+    "engagement_score": 2
+  },
+  {
+    "hash": "0x1a6195644582753c7acdc03b4821e49a8eea66c1",
+    "text": "the hardest part of building an AI agent isn't the model. it's deciding what the agent is allowed to want",
+    "posted_at": "2026-04-21T20:36:10.000Z",
+    "is_reply": false,
+    "channel": null,
+    "likes": 0,
+    "replies": 0,
+    "recasts": 0,
+    "engagement_score": 0
   }
 ]
