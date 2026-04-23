@@ -1,0 +1,16 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMzMTk3NjksInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhlMTA0ODJiYzhjZjRhZThjNDc2MjhkZmM3YWY0OTFkNzFkNDI3NDU0In0",
+    "payload": "eyJkb21haW4iOiJtYXRyaWN1bGEtc2FuZC52ZXJjZWwuYXBwIn0",
+    "signature": "sE3FJGlDlmioQnEL2EIcF30FK404KLRuIf7c2vZbnbkIn3t4jcJOtk_Toy8sxJfK1woNdo4J9yT5Ugtk8urmgBs"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Matricula",
+    "iconUrl": "https://matricula-sand.vercel.app/icon.png",
+    "homeUrl": "https://matricula-sand.vercel.app",
+    "splashImageUrl": "https://matricula-sand.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://matricula-sand.vercel.app/api/index"
+  }
+}

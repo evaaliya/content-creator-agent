@@ -16,7 +16,7 @@
   ],
   "crons": [
     {
-      "path": "/api/index",
+      "path": "/api/tick",
       "schedule": "0 0 * * *"
     }
   ]
