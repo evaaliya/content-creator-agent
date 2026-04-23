@@ -5,9 +5,10 @@ Stores history in metrics/history.json for reflection.
 """
 import json
 import os
+from config import get_data_path
 from datetime import datetime
 
-HISTORY_PATH = os.path.join(os.path.dirname(__file__), "history.json")
+HISTORY_PATH = get_data_path("history.json")
 
 
 def _load_history() -> list:

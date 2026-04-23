@@ -1,5 +1,6 @@
 import httpx
-from config import FARCASTER_SIGNER_UUID, FARCASTER_FID, NEYNAR_API_KEY
+import os
+from config import FARCASTER_FID, NEYNAR_API_KEY
 
 
 class FarcasterClient:
@@ -81,7 +82,7 @@ class FarcasterClient:
                     f"{self.base_url}/user/follow",
                     headers=self.headers,
                     json={
-                        "signer_uuid": FARCASTER_SIGNER_UUID,
+                        "signer_uuid": os.getenv("FARCASTER_SIGNER_UUID"),
                         "target_fids": [target_fid]
                     }
                 )
@@ -102,7 +103,7 @@ class FarcasterClient:
                     f"{self.base_url}/reaction",
                     headers=self.headers,
                     json={
-                        "signer_uuid": FARCASTER_SIGNER_UUID,
+                        "signer_uuid": os.getenv("FARCASTER_SIGNER_UUID"),
                         "reaction_type": "like",
                         "target": cast_hash
                     }
@@ -124,7 +125,7 @@ class FarcasterClient:
                     f"{self.base_url}/reaction",
                     headers=self.headers,
                     json={
-                        "signer_uuid": FARCASTER_SIGNER_UUID,
+                        "signer_uuid": os.getenv("FARCASTER_SIGNER_UUID"),
                         "reaction_type": "recast",
                         "target": cast_hash
                     }
@@ -213,7 +214,7 @@ class FarcasterClient:
                     headers=self.headers,
                     json={
                         "text": text,
-                        "signer_uuid": FARCASTER_SIGNER_UUID,
+                        "signer_uuid": os.getenv("FARCASTER_SIGNER_UUID"),
                         "parent": parent_hash
                     }
                 )

@@ -9,9 +9,10 @@ Records:
 """
 import json
 import os
+from config import get_data_path
 from datetime import datetime
 
-SPEND_LOG_PATH = os.path.join(os.path.dirname(__file__), "spend_log.json")
+SPEND_LOG_PATH = get_data_path("spend_log.json")
 
 
 def _load_log() -> list:

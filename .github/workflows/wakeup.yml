@@ -1,0 +1,14 @@
+name: Wake Up Agent
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Every 10 minutes
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel Endpoint
+        run: |
+          curl -I https://matricula-sand.vercel.app/api/index

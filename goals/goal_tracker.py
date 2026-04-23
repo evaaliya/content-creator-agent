@@ -11,10 +11,10 @@ Lowest score = current priority.
 import json
 import os
 import httpx
+from config import NEYNAR_API_KEY, FARCASTER_FID, get_data_path
 from datetime import datetime
-from config import NEYNAR_API_KEY, FARCASTER_FID
 
-PROGRESS_PATH = os.path.join(os.path.dirname(__file__), "progress.json")
+PROGRESS_PATH = get_data_path("progress.json")
 
 
 def _load_progress() -> list:

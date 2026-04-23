@@ -9,9 +9,10 @@ based on remaining energy:
 """
 import json
 import os
+from config import ANTHROPIC_API_KEY, get_data_path
 import datetime
 
-ENERGY_LOG_PATH = os.path.join(os.path.dirname(__file__), "energy_log.json")
+ENERGY_LOG_PATH = get_data_path("energy_log.json")
 
 # Claude Sonnet 4 pricing (per token)
 CLAUDE_PRICING = {
