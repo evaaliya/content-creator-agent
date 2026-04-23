@@ -11,7 +11,6 @@ import sys
 import json
 import time
 import subprocess
-import shutil
 import httpx
 from dotenv import load_dotenv
 
@@ -20,10 +19,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 NEYNAR_API_KEY = os.getenv("NEYNAR_API_KEY")
 FARCASTER_FID = int(os.getenv("FARCASTER_FID"))
 SIGNER_UUID = os.getenv("FARCASTER_SIGNER_UUID")
-PRIVY_ADDRESS = "0x2dBb1EcA97f2529233F7B3edC8fa893035Ec66cd"
-
-NPX_PATH = shutil.which("npx") or "/usr/local/bin/npx"
-CLI_PACKAGE = "@privy-io/agent-wallet-cli"
+PRIVY_ADDRESS = os.getenv("PRIVY_WALLET_ADDRESS", "")
 
 # Official Farcaster salt
 FARCASTER_SALT = "0xf2d857f4a3edcb9b78b4d503bfe733db1e3f6cdc2b7971ee739626c97e86a558"
@@ -75,23 +71,17 @@ def sign_with_privy(block_hash: str) -> str:
         }
     }
 
-    rpc_payload = json.dumps({
-        "method": "eth_signTypedData_v4",
-        "params": {
-            "typed_data": typed_data
-        }
-    })
-
-    env = dict(os.environ)
-    env["PATH"] = "/usr/local/bin:/opt/homebrew/bin:" + env.get("PATH", "")
-
+    script = os.path.join(os.path.dirname(__file__), "privy_server.mjs")
+    payload = {"typed_data": typed_data}
+    
     result = subprocess.run(
-        [NPX_PATH, CLI_PACKAGE, "rpc", "--json", rpc_payload],
-        capture_output=True, text=True, timeout=30, env=env
+        ["node", script, "eth_signTypedData_v4", json.dumps(payload)],
+        capture_output=True, text=True, timeout=30,
+        cwd=os.path.dirname(os.path.dirname(__file__))
     )
 
     if result.returncode != 0:
-        print(f"❌ Privy CLI error: {result.stderr}")
+        print(f"❌ Privy Node error: {result.stderr or result.stdout}")
         # Try personal_sign as fallback
         print("🔄 Trying personal_sign fallback...")
         return sign_with_personal_sign(block_hash)
@@ -101,16 +91,8 @@ def sign_with_privy(block_hash: str) -> str:
 
     try:
         data = json.loads(output)
-        # Privy returns {"method":"...", "data":{"signature":"0x..."}}
-        if isinstance(data, dict):
-            if "data" in data and isinstance(data["data"], dict):
-                sig = data["data"].get("signature") or data["data"].get("result")
-                if sig:
-                    return sig
-            if "signature" in data:
-                return data["signature"]
-            if "result" in data:
-                return data["result"]
+        if data.get("success"):
+            return data.get("result")
     except json.JSONDecodeError:
         pass
 
@@ -162,43 +144,27 @@ def sign_with_personal_sign(block_hash: str) -> str:
     msg_hash = structured.body.hex()
     print(f"   Hash to sign: 0x{msg_hash[:20]}...")
 
-    # Sign the raw hash via Privy CLI personal_sign
+    # Sign the raw hash via Privy Server SDK
     hex_msg = "0x" + msg_hash
-    rpc_payload = json.dumps({
-        "method": "personal_sign",
-        "params": {"message": hex_msg}
-    })
-
-    env = dict(os.environ)
-    env["PATH"] = "/usr/local/bin:/opt/homebrew/bin:" + env.get("PATH", "")
-
+    
+    script = os.path.join(os.path.dirname(__file__), "privy_server.mjs")
+    payload = {"message": hex_msg}
+    
     print(f"   Calling personal_sign...")
     result = subprocess.run(
-        [NPX_PATH, CLI_PACKAGE, "rpc", "--json", rpc_payload],
-        capture_output=True, text=True, timeout=30, env=env
+        ["node", script, "personal_sign", json.dumps(payload)],
+        capture_output=True, text=True, timeout=30,
+        cwd=os.path.dirname(os.path.dirname(__file__))
     )
-    print(f"   Return code: {result.returncode}")
-    print(f"   Stdout: {result.stdout[:200]}")
-    if result.stderr:
-        print(f"   Stderr: {result.stderr[:200]}")
-
+    
     if result.returncode != 0:
-        raise RuntimeError(f"personal_sign failed: {result.stderr}")
+        raise RuntimeError(f"personal_sign failed: {result.stderr or result.stdout}")
 
     output = result.stdout.strip()
-    # Parse nested JSON output from Privy CLI
     try:
         data = json.loads(output)
-        # Privy CLI returns {"data": {"signature": "0x..."}}
-        if isinstance(data, dict):
-            if "data" in data and isinstance(data["data"], dict):
-                sig = data["data"].get("signature") or data["data"].get("result")
-                if sig:
-                    return sig
-            if "signature" in data:
-                return data["signature"]
-            if "result" in data:
-                return data["result"]
+        if data.get("success"):
+            return data.get("result")
         return output
     except json.JSONDecodeError:
         lines = output.split('\n')

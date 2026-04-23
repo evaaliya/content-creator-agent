@@ -3,21 +3,18 @@ import subprocess
 import json
 import os
 import datetime
-import shutil
 
-MAX_TIP_PER_TX = 0.00005    # ~$0.01 per tip (micro-tip)
-MAX_DAILY_SPEND = 0.001     # ~$0.30 daily max
+# Limits for autonomous spending (in ETH)
+MAX_TIP_PER_TX = 0.005
+MAX_DAILY_SPEND = 0.02
 
-# Find npx path
-NPX_PATH = shutil.which("npx") or "/usr/local/bin/npx"
-CLI_PACKAGE = "@privy-io/agent-wallet-cli"
-
+# Replaced npx CLI with Node.js Server SDK wrapper
 
 class PrivyWallet:
     def __init__(self):
         self.daily_spend = 0.0
         self.daily_reset_date = datetime.date.today()
-        self.wallet_address = "0x2dBb1EcA97f2529233F7B3edC8fa893035Ec66cd"
+        self.wallet_address = os.getenv("PRIVY_WALLET_ADDRESS", "")
 
     def _check_daily_reset(self):
         today = datetime.date.today()
@@ -25,58 +22,57 @@ class PrivyWallet:
             self.daily_spend = 0.0
             self.daily_reset_date = today
     def sign_message(self, message: str) -> str:
-        """Sign a message using Privy Agent Wallet via CLI (personal_sign)."""
-        import json as _json
-        rpc_payload = _json.dumps({
-            "method": "personal_sign",
-            "params": {
-                "message": message
-            }
-        })
-        result = self._run_cli(["rpc", "--json", rpc_payload])
+        """Sign a message using Privy Server SDK (personal_sign)."""
+        payload = {"message": message}
+        result = self._run_node("personal_sign", payload)
         if result["success"]:
-            # Parse signature from CLI output
-            output = result["stdout"]
-            try:
-                data = _json.loads(output)
-                return data.get("result", output)
-            except _json.JSONDecodeError:
-                return output.strip()
+            return result["result"]
         else:
-            raise RuntimeError(f"Signing failed: {result['stderr']}")
+            raise RuntimeError(f"Signing failed: {result.get('error')}")
 
-    def _run_cli(self, args: list) -> dict:
-        """Run a Privy Agent CLI command and return parsed output."""
-        cmd = [NPX_PATH, CLI_PACKAGE] + args
-        # Ensure node/npx are on PATH for subprocess
-        env = dict(os.environ)
-        env["PATH"] = "/usr/local/bin:/opt/homebrew/bin:" + env.get("PATH", "")
+    def _run_node(self, command: str, payload_dict: dict) -> dict:
+        """Run Privy Server SDK wrapper and return parsed output."""
+        script = os.path.join(os.path.dirname(__file__), "privy_server.mjs")
+        cmd = ["node", script, command, json.dumps(payload_dict)]
+        
         try:
             result = subprocess.run(
                 cmd,
-                capture_output=True,
-                text=True,
-                timeout=30,
-                env=env
+                capture_output=True, text=True, timeout=30,
+                cwd=os.path.dirname(os.path.dirname(__file__))
             )
-            return {
-                "success": result.returncode == 0,
-                "stdout": result.stdout.strip(),
-                "stderr": result.stderr.strip()
-            }
+            
+            if result.returncode != 0:
+                err = result.stderr.strip() or result.stdout.strip()
+                try:
+                    data = json.loads(err)
+                    return {"success": False, "error": data.get("error", err)}
+                except:
+                    return {"success": False, "error": err}
+            
+            output = result.stdout.strip()
+            data = json.loads(output)
+            return {"success": data.get("success", False), "result": data.get("result", output)}
+            
         except subprocess.TimeoutExpired:
-            return {"success": False, "stdout": "", "stderr": "Command timed out"}
+            return {"success": False, "error": "Command timed out"}
         except Exception as e:
-            return {"success": False, "stdout": "", "stderr": str(e)}
+            return {"success": False, "error": str(e)}
 
     async def get_balance(self) -> str:
-        """Check wallet balances via CLI."""
-        result = await asyncio.to_thread(self._run_cli, ["list-wallets"])
-        if result["success"]:
-            print(f"💰 Wallets:\n{result['stdout']}")
-        else:
-            print(f"⚠️ Balance check failed: {result['stderr']}")
-        return result["stdout"]
+        """Check wallet balances via LI.FI SDK instead of Privy CLI."""
+        from wallet.lifi_balances import check_balances
+        balances = await asyncio.to_thread(check_balances, self.wallet_address)
+        if "error" in balances:
+            print(f"⚠️ Balance check failed: {balances['error']}")
+            return balances['error']
+            
+        res = "💰 Wallets:\n"
+        for chain, data in balances.items():
+            if float(data.get("eth", 0)) > 0 or float(data.get("usdc", 0)) > 0:
+                res += f"📍 {data['chain']}: {data['eth']} ETH | {data['usdc']} USDC\n"
+        print(res)
+        return res
 
     async def send_tip(self, recipient_address: str, amount: float) -> bool:
         """
@@ -102,35 +98,31 @@ class PrivyWallet:
             print(f"🚫 BLOCKED: Invalid address: {recipient_address}")
             return False
 
-        # Convert ETH to wei hex
+        # Convert ETH to wei string
         wei = int(amount * 10**18)
-        value_hex = hex(wei)
+        value_str = str(wei)
 
-        # Build RPC command — Privy requires caip2 + params.transaction
-        rpc_payload = json.dumps({
-            "method": "eth_sendTransaction",
-            "caip2": "eip155:42161",
-            "params": {
-                "transaction": {
-                    "to": recipient_address,
-                    "value": value_hex
-                }
+        payload = {
+            "transaction": {
+                "to": recipient_address,
+                "value": value_str
             }
-        })
+        }
 
         print(f"💸 Tipping {amount} ETH to {recipient_address[:10]}...")
 
         result = await asyncio.to_thread(
-            self._run_cli,
-            ["rpc", "--json", rpc_payload]
+            self._run_node,
+            "eth_sendTransaction", payload
         )
 
         if result["success"]:
             self.daily_spend += amount
-            print(f"✅ Tip sent! {result['stdout']}")
+            tx_hash = result["result"]
+            print(f"✅ Tip sent! Hash: {tx_hash}")
             print(f"📊 Daily spend: ${self.daily_spend:.4f}/${MAX_DAILY_SPEND}")
             return True
         else:
-            error = result["stderr"] or result["stdout"]
+            error = result.get("error", "Unknown error")
             print(f"❌ Tip failed: {error}")
             return False
