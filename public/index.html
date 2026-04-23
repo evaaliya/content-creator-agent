@@ -206,22 +206,6 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const btn = document.getElementById('tip-btn');
             const msgBox = document.getElementById('status-msg');
-            let sdk = null;
-
-            // Wait for SDK injection
-            const initSDK = async () => {
-                if (window.farcaster) {
-                    sdk = window.farcaster;
-                    await sdk.actions.ready();
-                    console.log("Farcaster SDK is ready!");
-                } else {
-                    console.warn("Farcaster SDK not found. Waiting...");
-                    // Try again in 500ms
-                    setTimeout(initSDK, 500);
-                }
-            };
-            
-            initSDK();
 
             function showMessage(msg, isError = false) {
                 msgBox.textContent = msg;
@@ -230,28 +214,35 @@
             }
 
             btn.addEventListener('click', async () => {
-                if (!sdk) {
-                    showMessage("You must open this Mini App inside Warpcast to tip.", true);
-                    return;
-                }
+                if (typeof window.ethereum !== 'undefined') {
+                    try {
+                        // Request connection to standard Web3 wallet
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        const from = accounts[0];
+                        
+                        // Agent's Privy Wallet address
+                        const AGENT_ADDRESS = "0x2dBb1EcA97f2529233F7B3edC8fa893035Ec66cd";
+                        
+                        // 0.001 ETH in HEX (Wei)
+                        const valueHex = "0x" + (1000000000000000).toString(16);
 
-                try {
-                    // Agent's Privy Wallet address on Base
-                    const AGENT_ADDRESS = "0x2dBb1EcA97f2529233F7B3edC8fa893035Ec66cd";
-                    
-                    // Native Warpcast Send ETH Payment UI
-                    const result = await sdk.actions.sendEth({
-                        to: AGENT_ADDRESS,
-                        value: "1000000000000000", // 0.001 ETH (approx $3)
-                        chainId: 8453 // Base Network
-                    });
+                        // Trigger standard Web3 wallet popup (Screenshot 2)
+                        const txHash = await window.ethereum.request({
+                            method: 'eth_sendTransaction',
+                            params: [{
+                                from: from,
+                                to: AGENT_ADDRESS,
+                                value: valueHex
+                            }]
+                        });
 
-                    if (result && result.hash) {
-                        showMessage("Thank you! Transaction sent: " + result.hash.substring(0,8) + "...");
+                        showMessage("Thank you! Transaction sent: " + txHash.substring(0,8) + "...");
+                    } catch (error) {
+                        console.error("Payment error:", error);
+                        showMessage("Payment cancelled or failed.", true);
                     }
-                } catch (error) {
-                    console.error("Payment error:", error);
-                    showMessage("Payment cancelled or failed.", true);
+                } else {
+                    showMessage("Web3 wallet not detected. Open in a Web3 browser.", true);
                 }
             });
         });
