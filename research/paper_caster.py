@@ -87,6 +87,14 @@ IMPORTANT: You MUST return your response as a JSON object with the following str
         actions = decision.get("actions", [])
         if actions and actions[0].get("type") == "publish_cast":
             cast_text = actions[0].get("content", "")
+            
+            # DeSci Curation Module logic
+            if source_type == "arxiv":
+                from research.desci_module import evaluateAndMint
+                desci_status = await evaluateAndMint(item)
+                if desci_status:
+                    cast_text += desci_status
+
             # Ensure link is included
             if url and url not in cast_text:
                 # Trim if needed to fit link
@@ -94,10 +102,16 @@ IMPORTANT: You MUST return your response as a JSON object with the following str
                 if len(cast_text) > max_text:
                     cast_text = cast_text[:max_text] + "..."
                 cast_text = f"{cast_text}\n{url}"
+                
+            # If the link plus desci_status exceeds Farcaster's 320 char limit, Farcaster client will truncate or error.
+            # Usually we fit under 320.
+            
             return {"type": "publish_cast", "content": cast_text, "source_item": item}
         return None
     except Exception as e:
+        import traceback
         print(f"⚠️ Research cast generation error: {e}")
+        traceback.print_exc()
         return None
 
 

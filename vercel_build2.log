@@ -1,0 +1,54 @@
+Retrieving project…
+Deploying pipaisnotabots-projects/matricula
+Uploading [--------------------] (0.0B/660B)
+Uploading [====================] (660.0B/660B)
+Inspect: https://vercel.com/pipaisnotabots-projects/matricula/8K2BLVpq8Txmp5x8gsSed7LnN3aV [4s]
+Production: https://matricula-7bgfrgy1g-pipaisnotabots-projects.vercel.app [4s]
+Building...
+Building: Running build in Washington, D.C., USA (East) – iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Downloading 77 deployment files...
+Building: Downloading 77 deployment files...
+Building: Restored build cache from previous deployment (5A84pbwrEvJK7LnfxPYouwfi1EsB)
+Building: Running "vercel build"
+Building: Vercel CLI 51.6.1
+Building: No Python version specified in .python-version, pyproject.toml, or Pipfile.lock. Using python version: 3.12
+Building: Using uv 0.10.11
+Building: Creating virtual environment at "/vercel/path0/.vercel/python/.venv"...
+Building: Installing required dependencies from requirements.txt...
+Building: Installing dependencies...
+Building: up to date in 785ms
+Building: 45 packages are looking for funding
+Building: run `npm fund` for details
+Building: Warning: Node.js functions are compiled from ESM to CommonJS. If this is not intended, add "type": "module" to your package.json file.
+Building: Compiling "farcaster.js" from ESM to CommonJS...
+Building: Build Completed in /vercel/output [14s]
+Building: Deploying outputs...
+Building: Deployment completed
+Building: Creating build cache...
+[2K[1A[2K[GProduction: https://matricula-7bgfrgy1g-pipaisnotabots-projects.vercel.app [1m]
+Completing...
+Aliased: https://matricula-sand.vercel.app [1m]
+{
+  "status": "ok",
+  "deployment": {
+    "id": "dpl_8K2BLVpq8Txmp5x8gsSed7LnN3aV",
+    "url": "https://matricula-7bgfrgy1g-pipaisnotabots-projects.vercel.app",
+    "inspectorUrl": "https://vercel.com/pipaisnotabots-projects/matricula/8K2BLVpq8Txmp5x8gsSed7LnN3aV",
+    "readyState": "READY",
+    "target": "production",
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_8K2BLVpq8Txmp5x8gsSed7LnN3aV"
+  },
+  "message": "Deployment matricula-7bgfrgy1g-pipaisnotabots-projects.vercel.app ready.",
+  "next": [
+    {
+      "command": "vercel inspect matricula-7bgfrgy1g-pipaisnotabots-projects.vercel.app",
+      "when": "Inspect deployment"
+    },
+    {
+      "command": "vercel deploy --prod",
+      "when": "Promote to production"
+    }
+  ]
+}

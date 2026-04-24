@@ -7,11 +7,21 @@
     "@privy-io/agent-wallet-cli": "^0.2.4",
     "@privy-io/node": "^0.16.0",
     "@privy-io/server-auth": "^1.32.5",
+    "@supabase/supabase-js": "^2.104.1",
+    "@zoralabs/protocol-sdk": "^0.13.21",
     "axios": "^1.15.0",
     "dotenv": "^17.4.2",
     "ethers": "^6.16.0",
+    "next": "^16.2.4",
     "node-fetch": "^3.3.2",
     "qrcode-terminal": "^0.12.0",
-    "viem": "^2.48.1"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "viem": "^2.48.4"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   }
 }

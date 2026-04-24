@@ -55,3 +55,21 @@ as $$
   order by embedding <-> query_embedding
   limit match_count;
 $$; 
+
+-- Daily agent state limits
+CREATE TABLE IF NOT EXISTS agent_state (
+    key VARCHAR(255) PRIMARY KEY,
+    value JSONB NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Agent Assets (DeSci Curation, NFTs, Tokens)
+CREATE TABLE IF NOT EXISTS agent_assets (
+    id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    article_title TEXT,
+    tx_hash VARCHAR(255),
+    nft_url TEXT,
+    insight_text TEXT,
+    asset_type VARCHAR(50)
+);
