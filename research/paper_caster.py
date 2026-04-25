@@ -24,7 +24,7 @@ async def create_research_cast(item: dict) -> dict | None:
         abstract = item.get("abstract", "")
         author_str = ", ".join(authors[:3])
         if len(authors) > 3:
-            author_str += f" et al."
+            author_str += " et al."
 
         content = f"""
 PAPER: {title}

@@ -11,7 +11,7 @@ from farcaster_service.farcaster_client import FarcasterClient
 from wallet.privy_wallet import PrivyWallet
 from memory.vector_memory import VectorMemory
 from brain.decision_engine import make_decision, analyze_cast_for_engagement, set_goal_context, set_memory_context, clear_memory_context
-from metrics.engagement_tracker import extract_metrics, update_history, get_history, get_stats
+from metrics.engagement_tracker import extract_metrics, update_history, get_stats
 from brain.reflection import reflect, needs_reflection
 from brain.energy_manager import get_energy_manager
 from goals.goal_tracker import evaluate as evaluate_goals, dashboard, get_goal_prompt
@@ -40,7 +40,7 @@ class AutonomousAgent:
             import json
             with open(self._hashes_file, "r") as f:
                 self.replied_hashes = set(json.load(f))
-        except:
+        except Exception:
             self.replied_hashes = set()
             
         self._posted_research_today = False
@@ -326,7 +326,7 @@ class AutonomousAgent:
             action_type = decision.get("actions", [{}])[0].get("type", "none")
 
             if action_type == "none":
-                print(f"   ⏭️ Skip")
+                print("   ⏭️ Skip")
                 continue
 
             print(f"   🧠 {decision.get('thoughts', '')[:100]}")
@@ -408,7 +408,7 @@ class AutonomousAgent:
         energy = get_energy_manager()
 
         print(f"\n{'='*50}")
-        print(f"🤖 @matricula — single run")
+        print("🤖 @matricula — single run")
         print(f"   {energy.status_line()}")
         print(f"{'='*50}")
 

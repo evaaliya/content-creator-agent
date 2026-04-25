@@ -1,4 +1,3 @@
-import httpx
 from anthropic import Anthropic
 from typing import Dict, Any
 import json

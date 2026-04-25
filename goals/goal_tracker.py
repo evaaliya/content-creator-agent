@@ -37,7 +37,7 @@ async def fetch_account_stats() -> dict:
     async with httpx.AsyncClient(timeout=15) as client:
         try:
             res = await client.get(
-                f"https://api.neynar.com/v2/farcaster/user/bulk",
+                "https://api.neynar.com/v2/farcaster/user/bulk",
                 headers={"api_key": NEYNAR_API_KEY, "accept": "application/json"},
                 params={"fids": FARCASTER_FID}
             )
@@ -178,7 +178,8 @@ def dashboard(report: dict) -> str:
     tre = report.get("treasury_score", 0)
     pri = report.get("priority", "?")
     
-    bar = lambda score: "█" * (score // 5) + "░" * (20 - score // 5)
+    def bar(score):
+        return "█" * (score // 5) + "░" * (20 - score // 5)
     
     lines = [
         "",

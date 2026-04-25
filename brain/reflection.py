@@ -6,7 +6,6 @@ Uses Claude to evaluate what works and what doesn't.
 import json
 import os
 from datetime import datetime
-from .llm_client import generate_agent_decision
 
 REFLECTION_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "metrics", "reflection.json")
 

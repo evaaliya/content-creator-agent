@@ -7,7 +7,6 @@ No API key required.
 import httpx
 import xml.etree.ElementTree as ET
 import random
-from datetime import datetime
 
 
 # Free RSS feeds — real crypto/web3 news sources

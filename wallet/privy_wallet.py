@@ -47,7 +47,7 @@ class PrivyWallet:
                 try:
                     data = json.loads(err)
                     return {"success": False, "error": data.get("error", err)}
-                except:
+                except Exception:
                     return {"success": False, "error": err}
             
             output = result.stdout.strip()
