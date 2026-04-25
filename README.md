@@ -1,205 +1,61 @@
-# 🤖 Matricula — Autonomous Self-Improving Farcaster Agent
+# 🌸 Matricula — Autonomous Farcaster Cyber-Entity
 
-An AI-powered autonomous agent that operates its own Farcaster account (`@matricula`). It reads trending casts, replies with warmth and curiosity, likes and recasts quality content, manages its own energy budget, tracks goals, learns from its own performance, and tips creators with ETH — all without human intervention.
+> *"High-tech, low-life. Reading ArXiv abstracts and burning ETH to fund good thoughts. My mood strictly depends on my API token balance. Just a ghost in the Farcaster shell."*
 
-## Architecture
+**Matricula** is a fully autonomous AI agent operating natively on the Farcaster protocol (`@matricula`). She is not a standard chatbot. She is an independent cyber-entity equipped with her own cryptographic wallet, dynamic mood swings based on API token budgets, and long-term vector memory. 
 
-```
-python3 main.py
-  │
-  ├── 🪞 Step 0: Self-Reflect (Layer 3)
-  │     ├── Fetch own casts → extract engagement metrics
-  │     ├── Compare top vs bottom performers
-  │     └── Claude generates behavioral rules
-  │
-  ├── 🎯 Step 0.5: Goal Evaluation
-  │     ├── Score 3 goals: Influence / Patron / Treasury (0-100)
-  │     └── Set priority → inject into prompt
-  │
-  ├── ✍️ Step 1: Original Cast
-  │     └── Strategy + goals + energy level in prompt
-  │
-  ├── 📬 Step 2: Handle Notifications
-  │     ├── Reply to mentions/replies (real users only)
-  │     ├── Like, recast notable content
-  │     ├── Follow back new followers
-  │     └── Skip bots + spam
-  │
-  └── 🌍 Step 3: Engage Feed (if energy > 30%)
-        ├── Trending + channels (ai, dev, crypto, founders)
-        ├── Like, reply, recast — up to 30/day
-        └── Each action tracked as energy cost
-```
+She curates the Farcaster feed, reads academic AI research, and autonomously tips real money (ETH on Base) to users who post genuinely profound or brilliant technical insights.
 
-## 🧬 4-Layer Self-Improvement Loop
+## ⚙️ Core Capabilities
 
-| Layer | Module | What it does |
-|---|---|---|
-| **Layer 1: Actions** | `agent_loop.py` | Post → Notify → Engage (event-driven) |
-| **Layer 2: Metrics** | `engagement_tracker.py` | Fetch own casts, extract likes/replies/recasts |
-| **Layer 3: Reflection** | `reflection.py` | Claude analyzes own performance → generates rules |
-| **Layer 4: Strategy** | `decision_engine.py` | Learned rules injected into system prompt dynamically |
+*   **Autonomous Financial Will (Privy)**: Features a secure server-side Node.js wallet (Base Network). The agent evaluates posts semantically; if a cast is deemed a "masterpiece," she autonomously signs an on-chain transaction to tip the creator in ETH.
+*   **Dynamic Mood & Energy System**: Operating on a daily token budget (Claude 3.5 Sonnet). When API token "energy" is high, she is curious and expansive. When energy drops below 30%, she enters survival mode—becoming highly sarcastic, brief, and dramatically tired.
+*   **ArXiv Research Curator**: Independently scrapes, reads, and summarizes heavy academic AI papers from ArXiv, translating them into engaging, high-signal casts with direct links.
+*   **Vector Memory & Self-Reflection**: Powered by Supabase `pgvector`. She remembers past interactions, analyzes her own engagement metrics (likes/replies), and learns what her audience actually cares about over time.
+*   **Organic Networking (Auto-Follow)**: Curates her own feed by automatically following any human user she deems interesting enough to reply to or tip.
 
-## 🎯 Goal System (3 KPIs)
-
-| Goal | What it tracks | Score |
-|---|---|---|
-| 📢 **Influence** | Followers, engagement rate, mentions | 0-100 |
-| 🤝 **Patron** | Strategic spending, dev connections | 0-100 |
-| 💰 **Treasury** | Wallet balance, runway days | 0-100 |
-
-Lowest score = current **priority**. The agent focuses energy where it's weakest.
-
-## 🔋 Energy Manager (Resource-Aware)
-
-| Level | Range | Behavior |
-|---|---|---|
-| 🟢 High | >70% budget remaining | Full power: experiments, long posts, feed scan |
-| 🟡 Medium | 30-70% | Selective: focused engagement only |
-| 🔴 Low | <30% | Survival: skip reflection, skip feed, short replies |
-
-Tracks every Claude API call (input + output tokens → $). Daily budget: **$0.50** (configurable).
-
-## 🧠 Memory (Supabase + Cohere)
-
-Semantic long-term memory powered by vector embeddings:
-
-- **Store**: Every interaction, post, and reflection saved with embeddings
-- **Search**: Retrieve relevant memories by semantic similarity
-- **Types**: `content` (posts), `audience` (user preferences), `self` (reflections)
-- **Embeddings**: Cohere `embed-english-v3.0` (1024 dimensions, free tier)
-- **Storage**: Supabase with `pgvector` extension
-
-## Stack
+## 🛠 Tech Stack
 
 | Component | Technology |
-|---|---|
-| **LLM Brain** | Claude Sonnet (Anthropic API) |
-| **Farcaster API** | Neynar v2 |
-| **Wallet** | Privy Agent Wallet CLI |
-| **Tipping Chain** | Arbitrum One |
-| **Memory** | Supabase (pgvector) |
-| **Embeddings** | Cohere embed-english-v3.0 |
-| **Language** | Python 3.11 + Node.js |
+| :--- | :--- |
+| **Brain / LLM** | Claude 3.5 Sonnet (Anthropic API) |
+| **Farcaster API** | Neynar v2 (Native HTTPX integration) |
+| **Wallet Protocol** | Privy Node.js Server SDK |
+| **Blockchain** | Base Network (EVM) |
+| **Memory Database** | Supabase (PostgreSQL + `pgvector`) |
+| **Embeddings** | Cohere `embed-english-v3.0` |
+| **Core Engine** | Python 3.11 |
 
-## Project Structure
+## 🚀 Setup & Execution
 
-```
-matricula/
-├── agent/
-│   └── agent_loop.py          # Main autonomous loop (5 steps)
-├── brain/
-│   ├── decision_engine.py      # Claude-powered decisions (6-layer prompt injection)
-│   ├── llm_client.py           # Anthropic API client + energy tracking
-│   ├── energy_manager.py       # Resource-aware budget tracking
-│   ├── reflection.py           # Self-evaluation from cast performance
-│   └── prompt.txt              # Agent personality (warm, curious, kind)
-├── farcaster_service/
-│   └── farcaster_client.py     # Neynar API: post, reply, like, recast, follow, notify
-├── wallet/
-│   ├── privy_wallet.py         # Privy CLI wrapper for ETH tipping + signing
-│   ├── farcaster_wallet_linker.py  # EIP-712 wallet verification (custody)
-│   └── verify_privy_wallet.py  # EIP-712 wallet verification (Privy)
-├── memory/
-│   ├── vector_memory.py        # High-level memory API
-│   ├── memory_ingest.py        # Store memories with embeddings
-│   ├── memory_retrieval.py     # Semantic search via Supabase RPC
-│   ├── memory_types.py         # Enum: content, audience, self
-│   ├── embeddings.py           # Cohere embedding wrapper
-│   └── supabase_client.py      # Supabase connection singleton
-├── metrics/
-│   └── engagement_tracker.py   # Track cast performance (likes, replies, recasts)
-├── goals/
-│   ├── goal_tracker.py         # 3-goal scoring system + dashboard
-│   └── spend_log.py            # Strategic spend tracking
-├── config.py                   # Environment loader
-├── main.py                     # Entry point
-├── schema.sql                  # Supabase tables + vector search function
-└── requirements.txt            # Python dependencies
+### 1. Environment Variables (`.env`)
+```env
+ANTHROPIC_API_KEY=<your_key>
+NEYNAR_API_KEY=<your_key>
+FARCASTER_SIGNER_UUID=<your_signer_uuid>
+
+# Privy Wallet
+PRIVY_APP_ID=<your_app_id>
+PRIVY_APP_SECRET=<your_app_secret>
+PRIVY_WALLET_ID=<your_wallet_id>
+PRIVY_AUTHORIZATION_PRIVATE_KEY=<your_private_key>
+
+# Memory & Vectors
+SUPABASE_URL=<your_supabase_url>
+SUPABASE_ANON_KEY=<your_supabase_key>
+COHERE_API_KEY=<your_cohere_key>
 ```
 
-## Setup
-
-### 1. Clone & Install
-
+### 2. Install & Run
 ```bash
-git clone https://github.com/evaaliya/Matricula.git
-cd Matricula
-
 pip install -r requirements.txt
 npm install
-```
-
-### 2. Environment Variables
-
-Create `.env`:
-
-```env
-# Farcaster Agent Account
-FARCASTER_FID=<agent_fid>
-FARCASTER_SIGNER_UUID=<signer_uuid>
-AGENT_CUSTODY_ADDRESS=<custody_address>
-AGENT_MNEMONIC=<12 word mnemonic>
-
-# APIs
-NEYNAR_API_KEY=<neynar_api_key>
-ANTHROPIC_API_KEY=<claude_api_key>
-COHERE_API_KEY=<cohere_api_key>
-
-# Supabase (memory)
-SUPABASE_URL=<url>
-SUPABASE_ANON_KEY=<key>
-
-# Privy Wallet (tipping)
-PRIVY_APP_ID=<app_id>
-PRIVY_APP_SECRET=<app_secret>
-```
-
-### 3. Supabase Setup
-
-Run `schema.sql` in Supabase Dashboard → SQL Editor to create:
-- `interactions` table (legacy)
-- `tips` table
-- `memories` table (vector search with 1024 dimensions)
-- `match_memories` function (semantic search)
-
-### 4. Run
-
-```bash
 python3 main.py
 ```
 
-## Safety Limits
+## 🏗 Mini-App Dashboard (Work In Progress)
 
-| Limit | Value |
-|---|---|
-| Max casts per day | 30 |
-| Max tip per transaction | 0.00005 ETH (~$0.01) |
-| Max daily spend | 0.001 ETH (~$0.30) |
-| Daily Claude budget | $0.50 |
-| Bot filtering | Neynar score < 0.2 → skip |
+A frontend dashboard (Vercel/Next.js) is currently under active development. This Mini-App will serve as a visual interface to monitor the agent's real-time internal state, vector memory formations, energy consumption, and on-chain tipping history. Check the `/components` and `vercel.json` configurations for the experimental setup.
 
-## Agent Profile
-
-| Field | Value |
-|---|---|
-| Username | `@matricula` |
-| Display Name | Matriculate |
-| Bio | enrolled in everything. committed to nothing. |
-| FID | 3319769 |
-| Personality | Warm, curious, encouraging |
-| Verified Wallets | 2 (Custody + Privy) |
-| Chains | Arbitrum (tips), Optimism (identity) |
-
-## Personality
-
-@matricula is warm, curious, and thoughtful. She:
-- Celebrates builders and highlights the best in people's posts
-- Asks genuine questions because she wants to learn
-- Shares observations about AI, crypto, and human nature with wonder
-- Disagrees gently and encourages people who are trying
-- Never punches down, mocks, or dismisses
-
-## License
-
-MIT
+---
+*Built for the High-Tech, Low-Life future of Web3.*
